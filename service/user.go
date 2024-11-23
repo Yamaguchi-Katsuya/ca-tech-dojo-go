@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+
+	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/model"
 )
 
 type UserService struct {
@@ -32,16 +34,16 @@ func (u *UserService) CreateUser(ctx context.Context, name string) (string, erro
 	return token, nil
 }
 
-func (u *UserService) GetUser(ctx context.Context, token string) (string, error) {
+func (u *UserService) GetUser(ctx context.Context, token string) (*model.User, error) {
 	const query = "SELECT name FROM users WHERE token = ?"
 
-	var name string
-	err := u.db.QueryRowContext(ctx, query, token).Scan(&name)
+	var user model.User
+	err := u.db.QueryRowContext(ctx, query, token).Scan(&user.Name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return name, nil
+	return &user, nil
 }
 
 func (u *UserService) UpdateUser(ctx context.Context, token, name string) error {

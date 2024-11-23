@@ -29,11 +29,11 @@ func (u *UserHandler) Create(ctx context.Context, req *model.CreateUserRequest) 
 }
 
 func (u *UserHandler) Get(ctx context.Context, req *model.GetUserRequest) (*model.GetUserResponse, error) {
-	name, err := u.svc.GetUser(ctx, req.Token)
+	user, err := u.svc.GetUser(ctx, req.Token)
 	if err != nil {
 		return nil, err
 	}
-	return &model.GetUserResponse{Name: name}, nil
+	return &model.GetUserResponse{Name: user.Name}, nil
 }
 
 func (u *UserHandler) Update(ctx context.Context, req *model.UpdateUserRequest) (*model.UpdateUserResponse, error) {
@@ -49,6 +49,7 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodPost && r.URL.Path == "/user/create":
 		var req model.CreateUserRequest
+
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "invalid JSON body", http.StatusBadRequest)
 			return
@@ -57,6 +58,7 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "name is required", http.StatusBadRequest)
 			return
 		}
+
 		resp, err := u.Create(r.Context(), &req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -66,16 +68,14 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 	case r.Method == http.MethodGet && r.URL.Path == "/user/get":
 		var req model.GetUserRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "invalid JSON body", http.StatusBadRequest)
-			return
-		}
+
 		token := r.Header.Get("x-token")
 		if token == "" {
 			http.Error(w, "x-token is required", http.StatusBadRequest)
 			return
 		}
 		req.Token = token
+
 		resp, err := u.Get(r.Context(), &req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -85,6 +85,7 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 	case r.Method == http.MethodPut && r.URL.Path == "/user/update":
 		var req model.UpdateUserRequest
+
 		token := r.Header.Get("x-token")
 		if token == "" {
 			http.Error(w, "x-token is required", http.StatusBadRequest)
