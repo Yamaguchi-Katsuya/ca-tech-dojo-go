@@ -8,8 +8,15 @@ type (
 
 	UserCharacter struct {
 		ID          int64  `json:"userCharacterID"`
-		UserID      int64  `json:"userID"`
 		CharacterID int64  `json:"characterID"`
 		Name        string `json:"name"`
+	}
+
+	GetUserCharactersRequest struct {
+		Token string `json:"token"`
+	}
+
+	GetUserCharactersResponse struct {
+		Characters []*UserCharacter `json:"characters"`
 	}
 )

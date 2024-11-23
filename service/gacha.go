@@ -72,7 +72,6 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 		}
 
 		userCharacter := &model.UserCharacter{
-			UserID:      user.ID,
 			CharacterID: character.ID,
 			Name:        character.Name,
 		}

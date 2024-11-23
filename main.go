@@ -26,9 +26,11 @@ func main() {
 
 	userHandler := handler.NewUserHandler(service.NewUserService(db))
 	gachaHandler := handler.NewGachaHandler(service.NewGachaService(db))
+	characterHandler := handler.NewCharacterHandler(service.NewCharacterService(db))
 
 	mux := http.NewServeMux()
 	mux.Handle("/user/", userHandler)
 	mux.Handle("/gacha/", gachaHandler)
+	mux.Handle("/character/", characterHandler)
 	http.ListenAndServe(":8080", mux)
 }
