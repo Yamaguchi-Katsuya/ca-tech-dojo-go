@@ -65,6 +65,7 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	case r.Method == http.MethodGet && r.URL.Path == "/user/get":
 		var req model.GetUserRequest
@@ -82,6 +83,7 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	case r.Method == http.MethodPut && r.URL.Path == "/user/update":
 		var req model.UpdateUserRequest
@@ -108,8 +110,10 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	default:
+		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
