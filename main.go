@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/handler"
+	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/handler/middleware"
 	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/service"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -29,8 +30,8 @@ func main() {
 	characterHandler := handler.NewCharacterHandler(service.NewCharacterService(db))
 
 	mux := http.NewServeMux()
-	mux.Handle("/user/", userHandler)
-	mux.Handle("/gacha/", gachaHandler)
-	mux.Handle("/character/", characterHandler)
+	mux.Handle("/user/", middleware.ActionLog(userHandler))
+	mux.Handle("/gacha/", middleware.ActionLog(gachaHandler))
+	mux.Handle("/character/", middleware.ActionLog(characterHandler))
 	http.ListenAndServe(":8080", mux)
 }
