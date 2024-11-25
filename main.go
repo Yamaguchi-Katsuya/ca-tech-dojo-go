@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/handler"
@@ -33,5 +36,30 @@ func main() {
 	mux.Handle("/user/", middleware.ActionLog(userHandler))
 	mux.Handle("/gacha/", middleware.ActionLog(gachaHandler))
 	mux.Handle("/character/", middleware.ActionLog(characterHandler))
-	http.ListenAndServe(":8080", mux)
+
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	go func() {
+		log.Printf("Server is starting on %s\n", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("ListenAndServe error: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	log.Println("Shutdown signal received")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("Server shutdown error: %v", err)
+	}
+	log.Println("Server gracefully stopped")
 }
