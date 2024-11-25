@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/model"
 )
@@ -16,30 +17,38 @@ func NewCharacterService(db *sql.DB) *CharacterService {
 }
 
 func (c *CharacterService) ListCharacters(ctx context.Context, token string) ([]*model.UserCharacter, error) {
-	const query = `
+	const (
+		querySelectUser           = "SELECT id FROM users WHERE token = ?"
+		querySelectUserCharacters = `
 		SELECT
 			uc.id,
 			uc.character_id,
 			c.name
 		FROM
-			users AS u
-		JOIN
 			user_characters AS uc
-		ON
-			uc.user_id = u.id
 		JOIN
 			characters AS c
 		ON
 			uc.character_id = c.id
 		WHERE
-			u.token = ?
+			uc.user_id = ?
 		ORDER BY
 			uc.created_at DESC
 	`
+	)
+
+	u := &model.User{}
+	err := c.db.QueryRowContext(ctx, querySelectUser, token).Scan(&u.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &model.UnauthorizedError{}
+		}
+		return nil, err
+	}
 
 	ucs := []*model.UserCharacter{}
-	rows, err := c.db.QueryContext(ctx, query, token)
-	if err != nil {
+	rows, err := c.db.QueryContext(ctx, querySelectUserCharacters, u.ID)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

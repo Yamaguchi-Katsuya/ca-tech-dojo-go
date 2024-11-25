@@ -40,6 +40,9 @@ func (u *UserService) GetUser(ctx context.Context, token string) (*model.User, e
 	var user model.User
 	err := u.db.QueryRowContext(ctx, query, token).Scan(&user.Name)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &model.UnauthorizedError{}
+		}
 		return nil, err
 	}
 
@@ -50,6 +53,9 @@ func (u *UserService) UpdateUser(ctx context.Context, token, name string) error 
 	const query = "UPDATE users SET name = ? WHERE token = ?"
 	updated, err := u.db.ExecContext(ctx, query, name, token)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return &model.UnauthorizedError{}
+		}
 		return err
 	}
 
@@ -58,7 +64,7 @@ func (u *UserService) UpdateUser(ctx context.Context, token, name string) error 
 		return err
 	}
 	if rowsAffected == 0 {
-		return errors.New("user not found")
+		return &model.UnauthorizedError{}
 	}
 
 	return nil

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/model"
@@ -79,6 +80,10 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		resp, err := u.Get(r.Context(), &req)
 		if err != nil {
+			if errors.Is(err, &model.UnauthorizedError{}) {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -106,6 +111,10 @@ func (u *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		resp, err := u.Update(r.Context(), &req)
 		if err != nil {
+			if errors.Is(err, &model.UnauthorizedError{}) {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

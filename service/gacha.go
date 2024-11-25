@@ -39,6 +39,9 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 	user := &model.User{}
 	err := g.db.QueryRowContext(ctx, querySelectUser, token).Scan(&user.ID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &model.UnauthorizedError{}
+		}
 		return nil, err
 	}
 
