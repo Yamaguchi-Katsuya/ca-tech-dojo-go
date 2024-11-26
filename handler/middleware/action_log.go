@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/model"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/model"
 )
 
 func ActionLog(next http.Handler) http.Handler {

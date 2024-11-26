@@ -1,4 +1,4 @@
-module github.com/Yamaguchi-Katsuya/ca-tech-dojo-go
+module github.com/Yamaguchi-Katsuya/golang-gacha-app-api
 
 go 1.22.5
 

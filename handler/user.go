@@ -6,8 +6,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/model"
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/service"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/model"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/service"
 )
 
 type UserHandler struct {

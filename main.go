@@ -9,9 +9,9 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/handler"
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/handler/middleware"
-	"github.com/Yamaguchi-Katsuya/ca-tech-dojo-go/service"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/handler"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/handler/middleware"
+	"github.com/Yamaguchi-Katsuya/golang-gacha-app-api/service"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -21,7 +21,7 @@ func main() {
 		log.Fatalln("main: failed to exit successfully, err =", err)
 	}
 
-	db, err := sql.Open("mysql", "ca-tech-dojo:password@tcp(localhost:3306)/ca-tech-dojo")
+	db, err := sql.Open("mysql", "gacha-app:password@tcp(localhost:3306)/gacha-app")
 	if err != nil {
 		log.Fatalln("main: failed to exit successfully, err =", err)
 	}
