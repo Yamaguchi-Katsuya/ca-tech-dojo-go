@@ -33,13 +33,15 @@ func main() {
 	characterHandler := handler.NewCharacterHandler(service.NewCharacterService(db))
 
 	mux := http.NewServeMux()
-	mux.Handle("/user/", middleware.ActionLog(userHandler))
-	mux.Handle("/gacha/", middleware.ActionLog(gachaHandler))
-	mux.Handle("/character/", middleware.ActionLog(characterHandler))
+	mux.Handle("/user/", userHandler)
+	mux.Handle("/gacha/", gachaHandler)
+	mux.Handle("/character/", characterHandler)
+
+	handler := middleware.CORS(middleware.ActionLog(mux))
 
 	srv := &http.Server{
 		Addr:    ":8080",
-		Handler: mux,
+		Handler: handler,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
