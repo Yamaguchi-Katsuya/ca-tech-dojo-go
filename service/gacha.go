@@ -98,7 +98,7 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 }
 
 func drawGacha(gps []*model.GachaProbability) (*model.Character, error) {
-	randomValue, err := SecureRandomFloat()
+	randomValue, err := secureRandomFloat()
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +118,8 @@ func drawGacha(gps []*model.GachaProbability) (*model.Character, error) {
 	return nil, errors.New("failed to draw gacha")
 }
 
-func SecureRandomFloat() (float64, error) {
-	n, err := rand.Int(rand.Reader, big.NewInt(1000000)) // 0 ~ 999999
+func secureRandomFloat() (float64, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
 		return 0, err
 	}
