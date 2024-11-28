@@ -36,6 +36,7 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 		insertUserCharacter = "INSERT INTO user_characters (user_id, character_id) VALUES (?, ?)"
 	)
 
+	// ユーザーを取得
 	user := &model.User{}
 	err := g.db.QueryRowContext(ctx, querySelectUser, token).Scan(&user.ID)
 	if err != nil {
@@ -45,6 +46,7 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 		return nil, err
 	}
 
+	// ガチャ確率データを取得
 	gps := []*model.GachaProbability{}
 	rows, err := g.db.QueryContext(ctx, querySelectGachaProbabilities)
 	if err != nil {
@@ -61,30 +63,51 @@ func (g *GachaService) DrawGacha(ctx context.Context, token string, times int) (
 		gps = append(gps, gp)
 	}
 
+	// 並列処理用のチャンネルとエラー収集
+	resultCh := make(chan *model.UserCharacter, times)
+	errCh := make(chan error, times)
+	defer close(resultCh)
+	defer close(errCh)
+
+	// 並列でガチャを引く
+	for i := 0; i < times; i++ {
+		go func() {
+			character, err := drawGacha(gps)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			resultCh <- &model.UserCharacter{
+				CharacterID: character.ID,
+				Name:        character.Name,
+			}
+		}()
+	}
+
+	// 結果を収集
+	userCharacters := []*model.UserCharacter{}
+	for i := 0; i < times; i++ {
+		select {
+		case uc := <-resultCh:
+			userCharacters = append(userCharacters, uc)
+		case err := <-errCh:
+			return nil, err
+		}
+	}
+
+	// データベースにまとめて挿入
 	tx, err := g.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	userCharacters := []*model.UserCharacter{}
-	for i := 0; i < times; i++ {
-		character, err := drawGacha(gps)
+	for _, uc := range userCharacters {
+		res, err := tx.ExecContext(ctx, insertUserCharacter, user.ID, uc.CharacterID)
 		if err != nil {
 			return nil, err
 		}
-
-		userCharacter := &model.UserCharacter{
-			CharacterID: character.ID,
-			Name:        character.Name,
-		}
-		userCharacters = append(userCharacters, userCharacter)
-
-		res, err := tx.ExecContext(ctx, insertUserCharacter, user.ID, character.ID)
-		if err != nil {
-			return nil, err
-		}
-		userCharacter.ID, err = res.LastInsertId()
+		uc.ID, err = res.LastInsertId()
 		if err != nil {
 			return nil, err
 		}
